@@ -6,6 +6,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.enchantments.EnchantmentWrapper;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
@@ -172,6 +173,42 @@ public class DeadChestListener implements Listener {
                     String secondLine = local.get("holo_loading");
                     ArmorStand holoTime = generateHologram(b.getLocation(), secondLine, 0.5f, -1.2f, 0.5f, true);
 
+                    // Get items with soulbound
+                    Enchantment soulbound = new EnchantmentWrapper("soulbound");
+                    List<ItemStack> soulboundItems = new ArrayList<>();
+                    for (ItemStack is : p.getInventory().getContents()) {
+                        if (is != null && is.getEnchantments().containsKey(soulbound)) {
+                            soulboundItems.add(is);
+                            p.getInventory().remove(is);
+                        }
+                    }
+
+                    if (p.getInventory().getHelmet() != null
+                            && p.getInventory().getHelmet().getEnchantments().containsKey(soulbound)) {
+                        p.getInventory().setHelmet(null);
+                    }
+
+                    if (p.getInventory().getChestplate() != null
+                            && p.getInventory().getChestplate().getEnchantments().containsKey(soulbound)) {
+                        p.getInventory().setChestplate(null);
+                    }
+
+                    if (p.getInventory().getLeggings() != null
+                            && p.getInventory().getLeggings().getEnchantments().containsKey(soulbound)) {
+                        p.getInventory().setLeggings(null);
+                    }
+
+                    if (p.getInventory().getBoots() != null
+                            && p.getInventory().getBoots().getEnchantments().containsKey(soulbound)) {
+                        p.getInventory().setBoots(null);
+                    }
+
+                    if (p.getInventory().getItemInOffHand().getEnchantments().containsKey(soulbound)) {
+                        p.getInventory().setItemInOffHand(null);
+                    }
+
+                    generateLog("Soulbound content : " + Arrays.asList(soulboundItems));
+
                     // Remove items with curse of vanishing
                     for (ItemStack is : p.getInventory().getContents()) {
                         if (is != null && is.getEnchantments().containsKey(Enchantment.VANISHING_CURSE)) {
@@ -228,6 +265,7 @@ public class DeadChestListener implements Listener {
 
                     ItemStack[] backupInv = p.getInventory().getContents();
                     e.getDrops().clear();
+                    e.getDrops().addAll(soulboundItems);
                     p.getInventory().clear();
 
                     if (getConfig().getBoolean(ConfigKey.DISPLAY_POSITION_ON_DEATH)) {
